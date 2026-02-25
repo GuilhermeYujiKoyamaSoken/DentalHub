@@ -1,0 +1,36 @@
+'use server'
+
+import prisma from "@/lib/prisma"
+import { error } from "console"
+
+
+
+export async function GetAllServices({ userId }: { userId: string }) {
+
+    if (!userId) {
+        return {
+            error: "Falha ao buscar serviços!"
+        }
+    }
+
+    try {
+
+        const services = await prisma.service.findMany({
+            where:{
+                userId: userId,
+                status: true
+            }
+        })
+
+        return{
+            data: services
+        }
+
+    } catch(err) {
+
+        return {
+            error: "Falha ao buscar serviços!"
+        }
+    }
+
+}
