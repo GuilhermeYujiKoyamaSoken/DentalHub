@@ -20,6 +20,10 @@ import { Label } from "@/components/ui/label"
 import { formatPhone } from "@/utils/formatPhone"
 import { DateTimePicker } from "./date-picker"
 import { handleRegister } from "@/app/(public)/_actions/login"
+import { useCallback, useEffect, useState } from "react"
+import { ScheduleTimeList } from "./schedule-time-list"
+import { CreateNewAppointment } from "../_actions/create-appointment"
+import { toast } from "sonner"
 
 type UserWithServiceAndSubscription = Prisma.UserGetPayload<{
     include: {
@@ -32,13 +36,95 @@ interface ScheduleContentProps {
     clinic: UserWithServiceAndSubscription
 }
 
+export interface TimeSlot {
+    time: string,
+    available: boolean
+}
+
 export function ScheduleContent({ clinic }: ScheduleContentProps) {
 
     const form = UseAppointmentForm();
-    const { watch } = form
+    const { watch } = form;
 
-    async function handleRegisterAppointment(formData: AppointmentFormData){
+    const selectedDate = watch("date");
+    const selectedServiceId = watch("serviceId")
 
+    const [selectedTime, setSelectedTime] = useState("");
+    const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlot[]>([]);
+    const [loadingSlots, setloadingSlots] = useState(false);
+
+    const [blockedTimes, setBlockedTimes] = useState<string[]>([]);
+
+    const fetchBlockedTimes = useCallback(async (date: Date): Promise<string[]> => {
+
+        setloadingSlots(true);
+        try {
+            const dateString = date.toISOString().split("T")[0];
+            const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/schedule/get-appointments?userId=${clinic.id}&date=${dateString}`);
+
+            const json = await response.json();
+            setloadingSlots(false);
+
+            return json;
+
+        } catch (error) {
+            console.log(error);
+            setloadingSlots(false);
+            return [];
+        }
+    }, [clinic.id])
+
+    useEffect(() => {
+
+        if (selectedDate) {
+            fetchBlockedTimes(selectedDate).then((blocked) => {
+
+                setBlockedTimes(blocked)
+
+                const times = clinic.times || [];
+
+                const finalSlots = times.map((time) => ({
+                    time: time,
+                    available: !blocked.includes(time)
+                }))
+
+                const stillAvaliable = finalSlots.find(
+                    (slot) => slot.time === selectedTime && slot.available
+                )
+
+                if (!stillAvaliable) {
+                    setSelectedTime("")
+                }
+
+                setAvailableTimeSlots(finalSlots);
+            })
+        }
+
+    }, [selectedDate, clinic.times, fetchBlockedTimes, selectedTime])
+
+    async function handleRegisterAppointment(formData: AppointmentFormData) {
+        if (!selectedTime) {
+            return
+        }
+
+        const response = await CreateNewAppointment({
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            time: selectedTime,
+            date: formData.date,
+            serviceId: formData.serviceId,
+            clinicId: clinic.id
+        })
+
+        if (response.error) {
+            toast.error(response.error)
+            return;
+        }
+
+        toast.success('Agendamento realizado com sucesso!')
+        form.reset();
+        setSelectedTime("");
     }
 
     return (
@@ -76,7 +162,7 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
 
             <section className="max-w-2xl mx-auto w-full mt-6">
                 <Form {...form}>
-                    <form 
+                    <form
                         className="mx-2 space-y-6 bg-white p-6 border rounded-md shadow-sm"
                         onSubmit={form.handleSubmit(handleRegisterAppointment)}
                     >
@@ -138,21 +224,6 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
 
                         <FormField
                             control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem className="y-2">
-                                    <FormLabel className="font-semibold">Email:</FormLabel>
-                                    <FormControl>
-                                        <Input id="email" placeholder="Digite seu email" {...field}></Input>
-                                    </FormControl>
-                                    <FormMessage></FormMessage>
-                                </FormItem>
-                            )}
-                        >
-                        </FormField>
-
-                        <FormField
-                            control={form.control}
                             name="date"
                             render={({ field }) => (
                                 <FormItem className="flex items-center gap-2 space-y-1">
@@ -182,7 +253,10 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                                 <FormItem className="">
                                     <FormLabel className="font-semibold">Selecione o serviço:</FormLabel>
                                     <FormControl>
-                                        <Select onValueChange={field.onChange}>
+                                        <Select onValueChange={(value) => {
+                                            field.onChange(value)
+                                            setSelectedTime("")
+                                        }}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Selecione um serviço"></SelectValue>
                                             </SelectTrigger>
@@ -201,11 +275,38 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                         >
                         </FormField>
 
+                        {selectedServiceId && (
+                            <div className="space-y-2">
+                                <Label className="font-semibold">Horários disponíveis</Label>
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                    {loadingSlots ? (
+                                        <p>Carregando horários</p>
+                                    ) : availableTimeSlots.length === 0 ? (
+                                        <p>Nenhum horário disponível</p>
+                                    ) : (
+                                        <ScheduleTimeList
+                                            onSelectTime={(time) => { setSelectedTime(time) }}
+                                            clinicTimes={clinic.times}
+                                            blockedTimes={blockedTimes}
+                                            availableTimeSlots={availableTimeSlots}
+                                            selectedTime={selectedTime}
+                                            selectedDate={selectedDate}
+                                            requiredSlots={
+                                                clinic.services.find(service => service.id === selectedServiceId) ? Math.ceil(clinic.services.find(
+                                                    service => service.id === selectedServiceId)!.duration / 30) : 1
+                                            }
+                                        >
+                                        </ScheduleTimeList>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         {clinic.status ? (
                             <Button
                                 className="w-full bg-emerald-500 hover:bg-emerald-300"
                                 type="submit"
-                                disabled={!form.watch('name') || !form.watch('email') || !form.watch('phone') || !form.watch('date')}
+                                disabled={!watch("name") || !watch("email") || !watch("phone") || !watch("date")}
                             >
                                 Realizar agendamento
                             </Button>

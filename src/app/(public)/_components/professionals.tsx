@@ -3,8 +3,13 @@ import fotoImg from '../../../../public/foto1.jpg'
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { User } from "@prisma/client";
 
-export function Professionals() {
+interface ProfessionalsProps {
+    professionals: User[]
+}
+
+export function Professionals({ professionals }: ProfessionalsProps) {
     return (
         <section className="bg-gray-50 pt-16 pb-16">
 
@@ -14,40 +19,44 @@ export function Professionals() {
 
                 <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
-                    <Card className="overflow-hidden">
-                        <CardContent className="p-0">
+                    {professionals.map((clinic) => (
 
-                            <div>
-                                <div className="relative h-48">
-                                    <Image
-                                        src={fotoImg}
-                                        alt="Foto do profissional"
-                                        fill
-                                        className="object-cover">
-                                    </Image>
-                                </div>
-                            </div>
+                        <Card className="overflow-hidden hover:shadow-lg duration-300" key={clinic.id}>
+                            <CardContent className="p-0">
 
-                            <div className="p-4 space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <h3 className="font-semibold">Clínica Sorrisal</h3>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                <div>
+                                    <div className="relative h-48">
+                                        <Image
+                                            src={clinic.image ?? fotoImg}
+                                            alt="Foto do profissional"
+                                            fill
+                                            className="object-cover">
+                                        </Image>
+                                    </div>
                                 </div>
-                                <p className="text-sm text-gray-500">
-                                    Rua 25 de dezembro, 924 - Campo Grande/MS
-                                </p>
-                                
-                            </div>
+
+                                <div className="p-4 space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-semibold">{clinic.name}</h3>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                    </div>
+                                    <p className="text-sm text-gray-500">
+                                        {clinic.address ?? "Endereço não informado"}
+                                    </p>
+
+                                </div>
                                 <Link
-                                    href={"/clinica/123"}
+                                    href={`/clinic/${clinic.id}`}
+                                    target="_blank"
                                     className="w-full bg-emerald-500 hover:bg-emerald-300 text-white flex items-center 
                                     justify-center py-2 rounded-md text-sm md:text-base font-medium">
                                     Agendar horário
                                     <ArrowRight className="ml-2"></ArrowRight>
                                 </Link>
-                        
-                        </CardContent>
-                    </Card>
+
+                            </CardContent>
+                        </Card>
+                    ))}
 
                 </section>
 
