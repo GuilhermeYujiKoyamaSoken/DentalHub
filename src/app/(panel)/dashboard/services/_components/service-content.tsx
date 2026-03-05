@@ -1,5 +1,7 @@
+import { CanPermission } from "@/utils/permissions/canPermission";
 import { GetAllServices } from "../_data-access/get-all-services"
 import { ServicesList } from "./services-list"
+import { LabelSubscription } from "@/components/ui/label-subscription";
 
 
 interface ServicesContentProps {
@@ -8,11 +10,15 @@ interface ServicesContentProps {
 
 export async function ServicesContent({ userId }: ServicesContentProps) {
 
-    const services = await GetAllServices({ userId: userId })
+    const services = await GetAllServices({ userId: userId });
+    const permissions = await CanPermission({ type: "service" })
 
     return (
-
-        <ServicesList services={services.data || []}></ServicesList>
-
+        <>
+            {!permissions.hasPermission && (
+                <LabelSubscription expired={permissions.expired}></LabelSubscription>
+            )}
+            <ServicesList services={services.data || []} permission={permissions}></ServicesList>
+        </>
     )
 }

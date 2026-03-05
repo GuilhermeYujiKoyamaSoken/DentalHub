@@ -3,10 +3,17 @@ import fotoImg from '../../../../public/foto1.jpg'
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { PremiumCardBadge } from "./premium-badge";
+
+type UserWithSubscription = Prisma.UserGetPayload<{
+    include: {
+        subscription: true
+    }
+}>
 
 interface ProfessionalsProps {
-    professionals: User[]
+    professionals: UserWithSubscription[]
 }
 
 export function Professionals({ professionals }: ProfessionalsProps) {
@@ -32,28 +39,31 @@ export function Professionals({ professionals }: ProfessionalsProps) {
                                             fill
                                             className="object-cover">
                                         </Image>
+
+                                        {clinic?.subscription?.status === "active" && clinic?.subscription?.plan === "PROFESSIONAL" && <PremiumCardBadge/>}
                                     </div>
                                 </div>
 
-                                <div className="p-4 space-y-4">
+                                <div className="p-4 space-y-4 min-h-40 flex flex-col justify-between">
                                     <div className="flex items-center gap-2">
-                                        <h3 className="font-semibold">{clinic.name}</h3>
-                                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                        <div>
+                                            <h3 className="font-semibold">{clinic.name}</h3>
+
+                                            <p className="text-sm text-gray-500 line-clamp-2">
+                                                {clinic.address ?? "Endereço não informado"}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <p className="text-sm text-gray-500">
-                                        {clinic.address ?? "Endereço não informado"}
-                                    </p>
 
-                                </div>
-                                <Link
-                                    href={`/clinic/${clinic.id}`}
-                                    target="_blank"
-                                    className="w-full bg-emerald-500 hover:bg-emerald-300 text-white flex items-center 
+                                    <Link
+                                        href={`/clinic/${clinic.id}`}
+                                        target="_blank"
+                                        className="w-full bg-emerald-500 hover:bg-emerald-300 text-white flex items-center 
                                     justify-center py-2 rounded-md text-sm md:text-base font-medium">
-                                    Agendar horário
-                                    <ArrowRight className="ml-2"></ArrowRight>
-                                </Link>
-
+                                        Agendar horário
+                                        <ArrowRight className="ml-2"></ArrowRight>
+                                    </Link>
+                                </div>
                             </CardContent>
                         </Card>
                     ))}

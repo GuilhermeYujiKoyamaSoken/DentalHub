@@ -34,6 +34,7 @@ import { toast } from 'sonner'
 import { formatPhone } from '@/utils/formatPhone'
 import { signOut, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { AvatarProfile } from './profile-avatar'
 
 type UserWithSubscription = Prisma.UserGetPayload<{
     include: {
@@ -137,15 +138,10 @@ export function ProfileContent({ user }: ProfileContentProps) {
                         <CardContent className='space-y-6'>
 
                             <div className='flex justify-center'>
-                                <div className='bg-gray-200 relative h-40 w-40 rounded-full overflow-hidden'>
-                                    <Image
-                                        src={user.image ? user.image : ImageTest}
-                                        alt='foto da clínica'
-                                        fill
-                                        className='object-cover'
-                                    >
-                                    </Image>
-                                </div>
+                                <AvatarProfile
+                                    avatarUrl={user.image}
+                                    userId={user.id}
+                                ></AvatarProfile>
                             </div>
 
                             <div className='space-y-4'>

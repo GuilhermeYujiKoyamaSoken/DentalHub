@@ -27,15 +27,20 @@ import { Service } from "@prisma/client";
 import { FormatCurrency } from "@/utils/formatCurrency";
 import { deleteService } from "../_actions/delete-service";
 import { toast } from "sonner";
+import { ResultPermissionProp } from "@/utils/permissions/canPermission";
+import Link from "next/link";
 
 interface ServiceListProps {
-    services: Service[]
+    services: Service[],
+    permission: ResultPermissionProp
 }
 
-export function ServicesList({ services }: ServiceListProps) {
+export function ServicesList({ services, permission }: ServiceListProps) {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingService, setEditingServive] = useState<null | Service>(null);
+
+    const serviceList = permission.hasPermission ? services : services.slice(0, 10);
 
     async function handleDeleteService(serviceId: string) {
         const response = await deleteService({ serviceId: serviceId });
@@ -60,14 +65,22 @@ export function ServicesList({ services }: ServiceListProps) {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between spacey-0 pb-2">
                         <CardTitle className="text-xl md:text-2xl font-bold">Serviços</CardTitle>
-                        <DialogTrigger asChild>
-                            <Button onClick={() => {
-                                setEditingServive(null); 
-                                setIsDialogOpen(true);   
-                            }}>
-                                <Plus className="w-4 h-4"></Plus>
-                            </Button>
-                        </DialogTrigger>
+                        {permission.hasPermission && (
+                            <DialogTrigger asChild>
+                                <Button onClick={() => {
+                                    setEditingServive(null);
+                                    setIsDialogOpen(true);
+                                }}>
+                                    <Plus className="w-4 h-4"></Plus>
+                                </Button>
+                            </DialogTrigger>
+                        )}
+
+                        {!permission.hasPermission && (
+                            <Link href={"/dashboard/plans"} className="text-red-500">
+                                Limite de serviços atingido!
+                            </Link>
+                        )}
 
                         <DialogContent onInteractOutside={(e) => {
                             e.preventDefault();
