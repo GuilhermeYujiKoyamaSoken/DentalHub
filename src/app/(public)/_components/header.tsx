@@ -11,22 +11,21 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button";
-import { LogIn, Menu, Github, Mail } from "lucide-react";
+import { Menu, Mail } from "lucide-react";
 import { useSession } from 'next-auth/react'
 import { handleRegister } from '../_actions/login'
 
 export function Header() {
-    const { data: session, status} = useSession();
+    const { data: session, status } = useSession();
     const [isOpen, setIsOpen] = useState(false);
-    const [showLoginOptions, setShowLoginOptions] = useState(false);
 
     const navItems = [
         { href: "#profissionais", label: "Profissionais" },
         { href: "#contatos", label: "Contatos" }
     ]
 
-    async function handleLogin(provider: "google" | "github"){
-        await handleRegister(provider);
+    async function handleLogin() {
+        await handleRegister("google");
     }
 
     const NavLinks = () => (
@@ -36,103 +35,118 @@ export function Header() {
                     onClick={() => setIsOpen(false)}
                     key={item.href}
                     asChild
-                    className="bg-transparent hover:bg-transparent text-black shadow-none"
+                    variant="ghost"
+                    className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 >
-                    <Link href={item.href} className='text-base'>
+                    <Link href={item.href} className='text-base font-medium'>
                         {item.label}
                     </Link>
                 </Button>
             ))}
 
-            { status === 'loading' ? (
-                <></>
+            {status === 'loading' ? (
+                <div className="h-10 w-32 bg-gray-100 animate-pulse rounded-md"></div>
             ) : session ? (
-                <Link 
+                <Link
                     href={"/dashboard"}
-                    className='flex items-center justify-center gap-2 bg-zinc-900 text-white py-2 px-4 rounded-md hover:bg-zinc-800 transition-colors'
+                    className="inline-flex items-center justify-center gap-2 bg-emerald-600 text-white py-2 px-5 rounded-lg hover:bg-emerald-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
                 >
                     Acessar clínica
                 </Link>
             ) : (
-                <div className="flex flex-col gap-2 w-full">
-                    {!showLoginOptions ? (
-                        <Button 
-                            onClick={() => setShowLoginOptions(true)}
-                            className="flex items-center gap-2"
-                        >
-                            <LogIn className="h-4 w-4" />
-                            Portal da clínica
-                        </Button>
-                    ) : (
-                        <>
-                            <Button 
-                                onClick={() => {
-                                    handleLogin("google");
-                                    setIsOpen(false);
-                                }}
-                                className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
-                            >
-                                <Mail className="h-4 w-4" />
-                                Continuar com Google
-                            </Button>
-                            <Button 
-                                onClick={() => {
-                                    handleLogin("github");
-                                    setIsOpen(false);
-                                }}
-                                className="bg-gray-800 hover:bg-gray-900 text-white flex items-center gap-2"
-                            >
-                                <Github className="h-4 w-4" />
-                                Continuar com GitHub
-                            </Button>
-                            <Button 
-                                onClick={() => setShowLoginOptions(false)}
-                                variant="ghost"
-                                className="text-sm text-gray-600 hover:text-gray-900"
-                            >
-                                Voltar
-                            </Button>
-                        </>
-                    )}
-                </div>
+                <Button
+                    onClick={() => {
+                        handleLogin();
+                        setIsOpen(false);
+                    }}
+                    className="bg-white border-2 border-gray-200 hover:border-emerald-200 text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 transition-all duration-200 gap-2 shadow-sm"
+                >
+                    <Mail className="h-4 w-4" />
+                    Entrar com Google
+                </Button>
             )}
         </>
     )
 
     return (
-        <header className="fixed top-0 right-0 left-0 z-50 py-4 px-6 bg-white border-b">
-            <div className="container mx-auto flex items-center justify-between">
+        <header className="fixed top-0 right-0 left-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-100">
+            <div className="container mx-auto px-6 py-3">
+                <div className="flex items-center justify-between">
 
-                <Link href="/" className="text-3xl font-bold text-zinc-900">
-                    Dental<span className="text-emerald-500">Hub</span>
-                </Link>
+                    <Link href="/" className="group">
+                        <span className="text-3xl font-bold text-gray-900">
+                            Dental<span className="text-emerald-500 group-hover:text-emerald-600 transition-colors">Hub</span>
+                        </span>
+                    </Link>
 
-                {/* Desktop Navigation */}
-                <nav className="hidden md:flex items-center space-x-4">
-                    <NavLinks />
-                </nav>
+                    {/* Desktop Navigation */}
+                    <nav className="hidden md:flex items-center gap-2">
+                        <NavLinks />
+                    </nav>
 
-                {/* Mobile Navigation */}
-                <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                    <SheetTrigger asChild className="md:hidden">
-                        <Button className="text-black hover:bg-transparent" variant="ghost" size="icon">
-                            <Menu className="w-6 h-6" />
-                        </Button>
-                    </SheetTrigger>
+                    {/* Mobile Navigation */}
+                    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                        <SheetTrigger asChild className="md:hidden">
+                            <Button variant="ghost" size="icon" className="hover:bg-gray-100">
+                                <Menu className="w-5 h-5" />
+                            </Button>
+                        </SheetTrigger>
 
-                    <SheetContent side="right" className="w-72 sm:w-80 z-9999">
-                        <SheetHeader className="mb-4">
-                            <SheetTitle className="mt-4 text-lg">Menu</SheetTitle>
-                            <SheetDescription>
-                                {!session ? "Faça login para acessar a clínica" : "Bem-vindo de volta!"}
-                            </SheetDescription>
-                        </SheetHeader>
+                        <SheetContent side="right" className="w-75 sm:w-87.5">
+                            <SheetHeader className="mb-6">
+                                <SheetTitle className="text-2xl font-bold text-gray-900">
+                                    Dental<span className="text-emerald-500">Hub</span>
+                                </SheetTitle>
+                                <SheetDescription className="text-gray-500 pt-2">
+                                    {!session
+                                        ? "Entre com sua conta Google para acessar a clínica"
+                                        : `Bem-vindo, ${session.user?.name?.split(' ')[0] || session.user?.email?.split('@')[0] || 'de volta'}!`}
+                                </SheetDescription>
+                            </SheetHeader>
 
-                        <nav className='flex flex-col space-y-3 mt-2'>
-                            <NavLinks />
-                        </nav>
-                    </SheetContent>
-                </Sheet>
+                            <nav className='flex flex-col gap-3'>
+                                {navItems.map((item) => (
+                                    <Button
+                                        key={item.href}
+                                        asChild
+                                        variant="ghost"
+                                        onClick={() => setIsOpen(false)}
+                                        className="justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                                    >
+                                        <Link href={item.href} className='text-base font-medium'>
+                                            {item.label}
+                                        </Link>
+                                    </Button>
+                                ))}
+
+                                <div className="pt-4 border-t border-gray-100">
+                                    {status === 'loading' ? (
+                                        <div className="h-10 w-full bg-gray-100 animate-pulse rounded-lg"></div>
+                                    ) : session ? (
+                                        <Link
+                                            href={"/dashboard"}
+                                            onClick={() => setIsOpen(false)}
+                                            className="flex items-center justify-center gap-2 bg-emerald-600 text-white py-2.5 px-5 rounded-lg hover:bg-emerald-700 transition-all duration-200 font-medium w-full"
+                                        >
+                                            Acessar clínica
+                                        </Link>
+                                    ) : (
+                                        <Button
+                                            onClick={() => {
+                                                handleLogin();
+                                                setIsOpen(false);
+                                            }}
+                                            className="w-full bg-white border-2 border-gray-200 hover:border-emerald-200 text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 transition-all duration-200 gap-2"
+                                        >
+                                            <Mail className="h-4 w-4" />
+                                            Entrar com Google
+                                        </Button>
+                                    )}
+                                </div>
+                            </nav>
+                        </SheetContent>
+                    </Sheet>
+                </div>
             </div>
         </header>
     )
