@@ -44,13 +44,15 @@ export function SideBarDashboard({ children }: { children: React.ReactNode }) {
 
                 <div className='mb-6 mt-4'>
                     {!isCollapsed && (
-                        <Image
-                            src={logoImg}
-                            alt='Logo do DentalHub'
-                            priority
-                            quality={100}
-                        >
-                        </Image>
+                        <Link href="/">
+                            <Image
+                                src={logoImg}
+                                alt='Logo do DentalHub'
+                                priority
+                                quality={100}
+                                className="cursor-pointer"
+                            />
+                        </Link>
                     )}
 
                 </div>
@@ -66,40 +68,40 @@ export function SideBarDashboard({ children }: { children: React.ReactNode }) {
                     <nav className='flex flex-col gap-1 overflow-hidden mt-2'>
 
                         <SideBarLink
-                                href='/dashboard'
-                                label='Agendamentos'
-                                pathName={pathName}
-                                isCollapsed={isCollapsed}
-                                icon={<CalendarCheck2 className='w-6 h-6' />}
-                            >
-                            </SideBarLink>
+                            href='/dashboard'
+                            label='Agendamentos'
+                            pathName={pathName}
+                            isCollapsed={isCollapsed}
+                            icon={<CalendarCheck2 className='w-6 h-6' />}
+                        >
+                        </SideBarLink>
 
-                            <SideBarLink
-                                href='/dashboard/services'
-                                label='Serviços'
-                                pathName={pathName}
-                                isCollapsed={isCollapsed}
-                                icon={<Folder className='w-6 h-6' />}
-                            >
-                            </SideBarLink>
+                        <SideBarLink
+                            href='/dashboard/services'
+                            label='Serviços'
+                            pathName={pathName}
+                            isCollapsed={isCollapsed}
+                            icon={<Folder className='w-6 h-6' />}
+                        >
+                        </SideBarLink>
 
-                            <SideBarLink
-                                href='/dashboard/profile'
-                                label='Meu perfil'
-                                pathName={pathName}
-                                isCollapsed={isCollapsed}
-                                icon={<User className='w-6 h-6' />}
-                            >
-                            </SideBarLink>
+                        <SideBarLink
+                            href='/dashboard/profile'
+                            label='Meu perfil'
+                            pathName={pathName}
+                            isCollapsed={isCollapsed}
+                            icon={<User className='w-6 h-6' />}
+                        >
+                        </SideBarLink>
 
-                            <SideBarLink
-                                href='/dashboard/plans'
-                                label='Planos'
-                                pathName={pathName}
-                                isCollapsed={isCollapsed}
-                                icon={<Banknote className='w-6 h-6' />}
-                            >
-                            </SideBarLink>
+                        <SideBarLink
+                            href='/dashboard/plans'
+                            label='Planos'
+                            pathName={pathName}
+                            isCollapsed={isCollapsed}
+                            icon={<Banknote className='w-6 h-6' />}
+                        >
+                        </SideBarLink>
 
                     </nav>
                 )}
